@@ -21,10 +21,10 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/ai_sales_analytics";
+const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI).then(() => {
-  console.log("Connected to MongoDB.");
+  console.log("Connected to MongoDB.", mongoose.Connection.name);
   app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
   });
