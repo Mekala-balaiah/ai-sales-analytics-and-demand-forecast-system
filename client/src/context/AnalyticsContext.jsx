@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 import { BusinessContext } from './BusinessContext';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 export const AnalyticsContext = createContext();
 
@@ -25,7 +26,7 @@ export const AnalyticsProvider = ({ children }) => {
     setAppState(prev => ({ ...prev, loading: true, error: null }));
     
     try {
-      const res = await fetch(`http://localhost:5000/api/analytics/${activeBusiness._id}`, { 
+      const res = await fetch(`${API_BASE_URL}/api/analytics/${activeBusiness._id}`, { 
         headers: { 'Authorization': `Bearer ${token}` } 
       });
       if (!res.ok) throw new Error("Failed to fetch analytics state.");

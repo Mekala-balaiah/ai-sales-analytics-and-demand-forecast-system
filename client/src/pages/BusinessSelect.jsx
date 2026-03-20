@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { BusinessContext } from '../context/BusinessContext';
 import { Trash2 } from 'lucide-react';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 const BusinessSelect = () => {
   const [businesses, setBusinesses] = useState([]);
@@ -20,7 +21,7 @@ const BusinessSelect = () => {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/business', {
+      const res = await fetch(`${API_BASE_URL}/api/business`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -35,7 +36,7 @@ const BusinessSelect = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/business', {
+      const res = await fetch(`${API_BASE_URL}/api/business`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +63,7 @@ const BusinessSelect = () => {
     if (!window.confirm("Are you sure you want to delete this business? All associated data will be lost forever.")) return;
     
     try {
-      const res = await fetch(`http://localhost:5000/api/business/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/business/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

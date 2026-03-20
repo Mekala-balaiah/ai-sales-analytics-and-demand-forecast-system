@@ -3,6 +3,7 @@ import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { BusinessContext } from '../context/BusinessContext';
 import { AnalyticsContext } from '../context/AnalyticsContext';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 const UploadCenter = () => {
   const { token } = useContext(AuthContext);
@@ -41,7 +42,7 @@ const UploadCenter = () => {
     formData.append('file', file);
 
     try {
-      const res = await fetch(`http://localhost:5000/api/upload/${activeBusiness._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/upload/${activeBusiness._id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
