@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { BusinessContext } from '../context/BusinessContext';
 import { AnalyticsContext } from '../context/AnalyticsContext';
@@ -68,7 +69,7 @@ const Dashboard = () => {
         <div className="glass-panel" style={{ textAlign: 'center', padding: '64px' }}>
           <h2 style={{ color: 'var(--text-secondary)' }}>No Data Available</h2>
           <p className="mb-4">You have not uploaded any data for this business yet.</p>
-          <a href="/upload" className="btn-primary" style={{ textDecoration: 'none' }}>Go to Upload Dataset</a>
+          <Link to="/upload" className="btn-primary" style={{ textDecoration: 'none' }}>Go to Upload Dataset</Link>
         </div>
       ) : (
         <>
