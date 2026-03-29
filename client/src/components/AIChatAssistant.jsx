@@ -4,6 +4,7 @@ import { AnalyticsContext } from '../context/AnalyticsContext';
 import { AuthContext } from '../context/AuthContext';
 import { BusinessContext } from '../context/BusinessContext';
 import { formatCurrency } from '../utils/currencyFormatter';
+import { API_BASE_URL } from '../utils/apiConfig';
 
 const AIChatAssistant = ({ embedded = false }) => {
   const [isOpen, setIsOpen] = useState(embedded ? true : false);
@@ -41,7 +42,7 @@ const AIChatAssistant = ({ embedded = false }) => {
     }
 
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const baseUrl = `${API_BASE_URL}/api`;
       const response = await fetch(`${baseUrl}/analytics/${activeBusiness._id}/chat`, {
         method: "POST",
         headers: {
