@@ -1,0 +1,13 @@
+{
+  "name": "ai-sales-analytics-root",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "vercel-build": "cd client && npm install && npm run build",
+    "render-build": "cd server && npm install",
+    "postinstall": "npm run render-build",
+    "start": "cd server && node server.js"
+  }
+}
