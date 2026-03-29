@@ -276,36 +276,6 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* 8. AI Recommendations Panel */}
-          {/* <div className="glass-panel mt-4" style={{ background: 'linear-gradient(135deg, rgba(82, 80, 223, 0.1) 0%, rgba(100, 255, 218, 0.05) 100%)', border: '1px solid var(--accent-purple)' }}>
-            <h3 className="mb-4" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Zap color="var(--accent-purple)" /> AI Business Recommendations
-            </h3>
-            
-            {data.insights && data.insights.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-                {data.insights.map((insight, idx) => (
-                  <div 
-                    key={idx} 
-                    style={{ 
-                      padding: '16px', 
-                      background: 'rgba(0,0,0,0.3)', 
-                      borderRadius: '8px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '12px',
-                      borderLeft: `4px solid ${getInsightColor(insight.type)}`
-                    }}
-                  >
-                    <div>{getInsightIcon(insight.type)}</div>
-                    <p style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 500 }}>{insight.message}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-               <p>No actionable insights generated at this time. AI relies on rich data arrays to process trends.</p>
-            )}
-          </div> */}
 
         </>
       )}

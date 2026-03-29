@@ -12,7 +12,14 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const app = express();
 
 app.use(cors({
-  origin: "https://microbizcopilot.vercel.app",
+  origin: function (origin, callback) {
+    const allowedOrigins = ['https://microbizcopilot.vercel.app', 'http://localhost:5173', 'http://localhost:3000'];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
