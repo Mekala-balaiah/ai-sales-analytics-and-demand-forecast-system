@@ -1,10 +1,20 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+let genAI;
+const getGenAI = () => {
+  if (!genAI) {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY environment variable is missing on this server.");
+    }
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  }
+  return genAI;
+};
 
 const generateChatResponse = async (analyticsDoc, userMessage, chatHistory) => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const aiInstance = getGenAI();
+    const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Format chat history for Gemini API
     const formattedHistory = chatHistory.map(msg => ({
