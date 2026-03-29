@@ -25,7 +25,7 @@ const generateChatResponse = async (analyticsDoc, userMessage, chatHistory) => {
     const chat = model.startChat({
       history: formattedHistory,
       generationConfig: {
-        maxOutputTokens: 500,
+        maxOutputTokens: 4000,
         temperature: 0.7,
       },
     });
