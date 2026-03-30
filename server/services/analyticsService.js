@@ -66,8 +66,26 @@ const aggregateAnalytics = async (businessId, newRecords) => {
   doc.peakDays = Object.keys(dayMap).map(k => ({ dayOfWeek: k, orders: dayMap[k] }));
   doc.peakHours = Object.keys(hourMap).map(k => ({ hour: k, orders: hourMap[k] }));
 
-  // Growth calculation
-  doc.growthPercent = doc.totalRevenue > 0 ? (payloadRevenue / (doc.totalRevenue || 1)) * 100 : 0;
+  // Growth calculation: Compare the last 50% of the timeline to the first 50%
+  const salesCount = doc.salesOverTime.length;
+  if (salesCount > 1) {
+    const midPoint = Math.floor(salesCount / 2);
+    const firstHalf = doc.salesOverTime.slice(0, midPoint);
+    const secondHalf = doc.salesOverTime.slice(midPoint);
+    
+    const firstHalfRevenue = firstHalf.reduce((acc, curr) => acc + curr.revenue, 0);
+    const secondHalfRevenue = secondHalf.reduce((acc, curr) => acc + curr.revenue, 0);
+
+    if (firstHalfRevenue > 0) {
+      doc.growthPercent = (secondHalfRevenue / firstHalfRevenue) * 100;
+    } else {
+      // If we only have data in the second half, it's 100% growth (or baseline)
+      doc.growthPercent = 100;
+    }
+  } else {
+    // Initial state or single data point
+    doc.growthPercent = 100;
+  }
   
   // Forecast Accuracy simulation metric
   doc.forecastAccuracy = 82 + Math.floor(Math.random() * 15);
