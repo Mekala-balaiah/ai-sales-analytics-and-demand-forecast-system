@@ -13,6 +13,7 @@ const TopNav = ({ toggleSidebar }) => {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', 'light');
   }, []);
 
   return (
