@@ -59,8 +59,11 @@ const AnalyticsPage = () => {
                                     nameKey="category"
                                     cx="50%" cy="50%"
                                     outerRadius={110}
-                                    innerRadius={70}
-                                    paddingAngle={4}
+                                    innerRadius={70} // Keeping 70 here as per original to see if it's better
+                                    paddingAngle={0}
+                                    cornerRadius={6}
+                                    stroke="var(--panel-bg)"
+                                    strokeWidth={2}
                                     labelLine={false}
                                     label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
                                         if (percent < 0.05) return null;
