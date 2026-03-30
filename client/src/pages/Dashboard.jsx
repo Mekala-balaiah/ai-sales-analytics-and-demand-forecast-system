@@ -77,20 +77,20 @@ const Dashboard = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '32px' }}>
             <div className="glass-panel text-center">
               <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Total Revenue</p>
-              <h2 style={{ color: 'var(--accent-color)', fontSize: '1.8rem', margin: '8px 0' }}>
+              <h2 style={{ color: 'var(--accent-color)', fontSize: '1.7rem', margin: '8px 0' }}>
                 {formatCurrency(data.totalRevenue, currencyFormat)}
               </h2>
             </div>
             <div className="glass-panel text-center">
               <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Total Orders</p>
-              <h2 style={{ color: 'var(--text-primary)', fontSize: '2.2rem', margin: '8px 0' }}>
+              <h2 style={{ color: 'var(--text-primary)', fontSize: '2.0rem', margin: '8px 0' }}>
                 {data.totalOrders.toLocaleString()}
               </h2>
             </div>
             <div className="glass-panel text-center">
               <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Growth Rate</p>
-              <h2 style={{ color: data.growthPercent > 100 ? 'var(--success-color)' : 'var(--danger-color)', fontSize: '2.2rem', margin: '8px 0' }}>
-                {data.growthPercent > 100 ? '↑' : '↓'} {Math.abs(data.growthPercent - 100).toFixed(1)}%
+              <h2 style={{ color: data.growthPercent === 100 ? 'var(--text-secondary)' : (data.growthPercent > 100 ? 'var(--success-color)' : 'var(--danger-color)'), fontSize: '2.2rem', margin: '8px 0' }}>
+                {data.growthPercent === 100 ? '—' : (data.growthPercent > 100 ? '↑' : '↓')} {Math.abs(data.growthPercent - 100).toFixed(1)}%
               </h2>
             </div>
             <div className="glass-panel text-center">
@@ -187,8 +187,8 @@ const Dashboard = () => {
                   <BarChart data={data.peakDays} layout="vertical">
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} />
                     <XAxis type="number" stroke="var(--text-secondary)" />
-                    <YAxis dataKey="dayOfWeek" type="category" stroke="var(--text-secondary)" width={80} />
-                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
+                    <YAxis dataKey="dayOfWeek" type="category" stroke="var(--text-secondary)" width={100} />
+                    <Tooltip cursor={{ fill: 'rgba(149, 43, 43, 0.05)' }} contentStyle={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
                     <Bar dataKey="orders" fill="var(--accent-color)" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
