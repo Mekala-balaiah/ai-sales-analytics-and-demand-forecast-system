@@ -14,7 +14,7 @@ const getGenAI = () => {
 const generateChatResponse = async (analyticsDoc, userMessage, chatHistory) => {
   try {
     const aiInstance = getGenAI();
-    const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = aiInstance.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Format chat history for Gemini API
     const formattedHistory = chatHistory.map(msg => ({
@@ -26,19 +26,20 @@ const generateChatResponse = async (analyticsDoc, userMessage, chatHistory) => {
       history: formattedHistory,
       generationConfig: {
         maxOutputTokens: 4000,
-        temperature: 0.7,
+        temperature: 0.1, // Lower temperature to follow instructions more strictly
       },
     });
 
     // Provide context about the business's data
     const contextPrompt = `
-You are an expert AI Business Assistant integrated directly into a business analytics dashboard for MicroBizCopilot.
-The user is asking a question about their business data. Answer concisely, professionally, and use the provided data context to give accurate and specific insights.
-ALWAYS use **INR (₹)** for all monetary values. Do not use USD or $ symbols.
+SYSTEM INSTRUCTION:
+- You are an expert AI Business Assistant for MicroBizCopilot.
+- The user's business operates EXCLUSIVELY in Indian Rupees (INR).
+- **MANDATORY**: You MUST prepend the Indian Rupee symbol (₹) to every financial figure you mention.
+- **CRITICAL ERROR ALERT**: DO NOT use the dollar symbol ($) or the term "USD" under any circumstances. If the context contains a '$', you MUST convert it to '₹' in your response.
+- Answer concisely and professionally. Use markdown for bolding metrics.
 
-Use markdown for formatting, like **bolding** key metrics.
-
-Here is the current business data context:
+Current Business Data Context:
 - Total Revenue: ₹${analyticsDoc.totalRevenue || 0}
 - Total Orders: ${analyticsDoc.totalOrders || 0}
 - Average Order Value (AOV): ₹${(analyticsDoc.averageOrderValue || 0).toFixed(2)}
