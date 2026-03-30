@@ -32,17 +32,19 @@ const generateChatResponse = async (analyticsDoc, userMessage, chatHistory) => {
 
     // Provide context about the business's data
     const contextPrompt = `
-You are an expert AI Business Assistant integrated directly into a business analytics dashboard.
+You are an expert AI Business Assistant integrated directly into a business analytics dashboard for MicroBizCopilot.
 The user is asking a question about their business data. Answer concisely, professionally, and use the provided data context to give accurate and specific insights.
+ALWAYS use **INR (₹)** for all monetary values. Do not use USD or $ symbols.
+
 Use markdown for formatting, like **bolding** key metrics.
 
 Here is the current business data context:
-- Total Revenue: $${analyticsDoc.totalRevenue || 0}
+- Total Revenue: ₹${analyticsDoc.totalRevenue || 0}
 - Total Orders: ${analyticsDoc.totalOrders || 0}
-- Average Order Value (AOV): $${(analyticsDoc.averageOrderValue || 0).toFixed(2)}
-- Growth (Period over Period): ${analyticsDoc.growthPercent || 0}%
-- Top Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(0, 3).map(p => `${p.product} (Revenue: $${p.revenue}, Qty: ${p.quantity})`).join(', ') : 'None'}
-- Bottom Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(-3).map(p => `${p.product} (Revenue: $${p.revenue}, Qty: ${p.quantity})`).join(', ') : 'None'}
+- Average Order Value (AOV): ₹${(analyticsDoc.averageOrderValue || 0).toFixed(2)}
+- Growth (Period over Period): ${Math.abs(analyticsDoc.growthPercent - 100).toFixed(1)}% ${analyticsDoc.growthPercent >= 100 ? 'Increase' : 'Decrease'}
+- Top Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(0, 3).map(p => `${p.product} (Revenue: ₹${p.revenue}, Qty: ${p.quantity})`).join(', ') : 'None'}
+- Bottom Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(-3).map(p => `${p.product} (Revenue: ₹${p.revenue}, Qty: ${p.quantity})`).join(', ') : 'None'}
 - Top Sales Days: ${analyticsDoc.peakDays ? analyticsDoc.peakDays.slice(0, 2).map(d => `${d.dayOfWeek} (${d.orders} orders)`).join(', ') : 'None'}
 - Recent System Insights: ${analyticsDoc.insights ? analyticsDoc.insights.slice(0, 3).map(i => i.title + ': ' + i.description).join(' | ') : 'None'}
 
