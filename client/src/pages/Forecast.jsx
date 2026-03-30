@@ -29,7 +29,7 @@ const Forecast = () => {
                   <XAxis dataKey="date" stroke="var(--text-secondary)" />
                   <YAxis stroke="var(--text-secondary)" />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px' }} 
+                    contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
                     itemStyle={{ color: 'var(--success-color)' }}
                   />
                   <Line 

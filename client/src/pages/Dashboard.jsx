@@ -7,7 +7,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { TrendingUp, AlertTriangle, Info, Zap } from 'lucide-react';
 import { formatCurrency } from '../utils/currencyFormatter';
 
-const COLORS = ['#64ffda', '#b388ff', '#58a6ff', '#00e676', '#ff5252'];
+const COLORS = ['#00e676', '#b388ff', '#0984e3', '#ff7675', '#fdcb6e', '#e17055', '#00cec9', '#6c5ce7'];
 
 const Dashboard = () => {
   const { token } = useContext(AuthContext);
@@ -116,7 +116,8 @@ const Dashboard = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                   <XAxis dataKey="date" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} minTickGap={30} />
                   <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px', color: '#fff' }} />
+                  <Tooltip contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} itemStyle={{ color: 'var(--text-primary)' }} />
+观察到 Dashboard.jsx 中 Tooltip 的 backgroundColor 使用的是 var(--bg-color)，我建议统一使用 var(--panel-bg) 因为它通常有模糊效果且在 glass-panel 中更协调。
                   <Line type="monotone" dataKey="revenue" stroke="var(--accent-color)" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -133,7 +134,11 @@ const Dashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                     <XAxis dataKey="product" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
                     <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
-                    <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(255,255,255,0.05)' }} 
+                      contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
+                      itemStyle={{ color: 'var(--text-primary)' }}
+                    />
                     <Bar dataKey="quantity" fill="var(--accent-purple)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -170,8 +175,11 @@ const Dashboard = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ background: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
-                    <Legend />
+                    <Tooltip 
+                      contentStyle={{ background: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
+                      itemStyle={{ color: 'var(--text-primary)' }}
+                    />
+                    <Legend formatter={(value) => <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -188,7 +196,11 @@ const Dashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={false} />
                     <XAxis type="number" stroke="var(--text-secondary)" />
                     <YAxis dataKey="dayOfWeek" type="category" stroke="var(--text-secondary)" width={100} />
-                    <Tooltip cursor={{ fill: 'rgba(149, 43, 43, 0.05)' }} contentStyle={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(149, 43, 43, 0.05)' }} 
+                      contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
+                      itemStyle={{ color: 'var(--text-primary)' }}
+                    />
                     <Bar dataKey="orders" fill="var(--accent-color)" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -209,7 +221,10 @@ const Dashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                     <XAxis dataKey="hour" stroke="var(--text-secondary)" />
                     <YAxis stroke="var(--text-secondary)" />
-                    <Tooltip contentStyle={{ background: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
+                    <Tooltip 
+                      contentStyle={{ background: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
+                      itemStyle={{ color: 'var(--text-primary)' }}
+                    />
                     <Area type="monotone" dataKey="orders" stroke="var(--accent-purple)" fillOpacity={1} fill="url(#colorHours)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -262,8 +277,15 @@ const Dashboard = () => {
                         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                         <XAxis dataKey="name" stroke="var(--text-secondary)" minTickGap={30} />
                         <YAxis stroke="var(--text-secondary)" />
-                        <Tooltip contentStyle={{ backgroundColor: 'var(--bg-color)', borderColor: 'var(--border-color)', borderRadius: '8px' }} />
-                        <Legend verticalAlign="top" height={36} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
+                          itemStyle={{ color: 'var(--text-primary)' }}
+                        />
+                        <Legend 
+                          verticalAlign="top" 
+                          height={36} 
+                          formatter={(value) => <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>}
+                        />
                         <Area type="monotone" dataKey="actual" name="Historical Sales" stroke="var(--accent-color)" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" dot={false} activeDot={{ r: 6 }} />
                         <Area type="monotone" dataKey="predicted" name="AI Forecast" stroke="var(--success-color)" strokeWidth={3} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorPredicted)" dot={false} activeDot={{ r: 8 }} />
                       </AreaChart>

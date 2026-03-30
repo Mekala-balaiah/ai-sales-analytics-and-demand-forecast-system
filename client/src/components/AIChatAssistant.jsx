@@ -51,7 +51,8 @@ const AIChatAssistant = ({ embedded = false }) => {
         },
         body: JSON.stringify({
           message: userMessage,
-          history: messages.slice(1) // send history, skip the initial greeting
+          history: messages.slice(1),
+          currency: localStorage.getItem('currencyFormat') || 'INR'
         })
       });
 
