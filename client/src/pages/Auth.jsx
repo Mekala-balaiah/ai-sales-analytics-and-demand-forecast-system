@@ -55,7 +55,7 @@ const Auth = () => {
 
   return (
     <div className="auth-container" style={{
-      background: 'linear-gradient(135deg, var(--bg-color) 0%, #161b22 100%)'
+      background: 'linear-gradient(135deg, #269dd862 45%, #bc51c47d 55%)'
     }}>
       <div className="glass-panel auth-card">
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
