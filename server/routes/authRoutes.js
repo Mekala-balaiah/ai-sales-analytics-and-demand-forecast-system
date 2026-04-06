@@ -18,7 +18,7 @@ router.post("/register", async (req, res) => {
     await user.save();
 
     const payload = { id: user.id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "10s" });
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
@@ -46,7 +46,7 @@ router.post("/login", async (req, res) => {
 
     const payload = { id: user.id };
     const secret = process.env.JWT_SECRET || "supersecretaianalyticskey123";
-    const token = jwt.sign(payload, secret, { expiresIn: "1h" });
+    const token = jwt.sign(payload, secret, { expiresIn: "10s" });
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
