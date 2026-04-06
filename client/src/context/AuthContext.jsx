@@ -7,8 +7,8 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const timeoutRef = useRef(null);
 
-  // 1 hour in milliseconds 3600000
-  const TIMEOUT_DURATION = 10000;
+  // 1 hour in milliseconds
+  const TIMEOUT_DURATION = 3600000;
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
