@@ -1,20 +1,19 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require("groq-sdk");
 
-let genAI;
-const getGenAI = () => {
-  if (!genAI) {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY environment variable is missing on this server.");
+let groq;
+const getGroq = () => {
+  if (!groq) {
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY environment variable is missing on this server.");
     }
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
-  return genAI;
+  return groq;
 };
 
 const generateChatResponse = async (analyticsDoc, userMessage, chatHistory, currencyFormat = 'INR') => {
   try {
-    const aiInstance = getGenAI();
-    const model = aiInstance.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const aiInstance = getGroq();
 
     // Determine the currency symbol and locale from the user's selected data format
     const isINR = currencyFormat !== 'USD_TO_INR';
@@ -26,22 +25,8 @@ const generateChatResponse = async (analyticsDoc, userMessage, chatHistory, curr
       return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(val || 0);
     };
 
-    // Format chat history for Gemini API
-    const formattedHistory = chatHistory.map(msg => ({
-      role: msg.role === 'ai' ? 'model' : 'user',
-      parts: [{ text: msg.text }],
-    }));
-
-    const chat = model.startChat({
-      history: formattedHistory,
-      generationConfig: {
-        maxOutputTokens: 4000,
-        temperature: 0.7,
-      },
-    });
-
     // Provide context about the business's data
-    const contextPrompt = `
+    const systemPrompt = `
 You are an expert AI Business Assistant integrated directly into a business analytics dashboard for MicroBizCopilot.
 The user is asking a question about their business data. Answer concisely, professionally, and use the provided data context to give accurate and specific insights.
 ALWAYS use the correct currency symbol (**${symbol}**) and formatting for all monetary values.
@@ -58,15 +43,30 @@ Here is the current business data context:
 - Bottom Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(-3).map(p => `${p.product} (Revenue: ${symbol}${formatValue(p.revenue)}, Qty: ${p.quantity})`).join(', ') : 'None'}
 - Top Sales Days: ${analyticsDoc.peakDays ? analyticsDoc.peakDays.slice(0, 2).map(d => `${d.dayOfWeek} (${d.orders} orders)`).join(', ') : 'None'}
 - Recent System Insights: ${analyticsDoc.insights ? analyticsDoc.insights.slice(0, 3).map(i => i.title + ': ' + i.description).join(' | ') : 'None'}
-
-User's Question: ${userMessage}
 `;
 
-    const result = await chat.sendMessage(contextPrompt);
-    const response = await result.response;
-    return response.text();
+    // Format chat history for Groq API
+    const formattedHistory = chatHistory.map(msg => ({
+      role: msg.role === 'ai' ? 'assistant' : 'user',
+      content: msg.text,
+    }));
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      ...formattedHistory,
+      { role: "user", content: userMessage }
+    ];
+
+    const chatCompletion = await aiInstance.chat.completions.create({
+      messages: messages,
+      model: "llama-3.1-8b-instant", // Fast and powerful open-source model
+      temperature: 0.7,
+      max_tokens: 4000,
+    });
+
+    return chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Groq API Error:", error);
     return "I'm sorry, I encountered an error while trying to generate a response. Please try again later.";
   }
 };

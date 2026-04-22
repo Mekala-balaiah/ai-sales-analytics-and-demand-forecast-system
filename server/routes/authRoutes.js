@@ -18,7 +18,7 @@ router.post("/register", async (req, res) => {
     await user.save();
 
     const payload = { id: user.id };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
@@ -31,14 +31,14 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    
+
     if (!user) {
       return res.status(400).json({ message: "Invalid Credentials: User not found" });
     }
 
     if (!user.password) {
-       console.error("Login Error: User record exists but password hash is missing.");
-       return res.status(400).json({ message: "Invalid user configuration" });
+      console.error("Login Error: User record exists but password hash is missing.");
+      return res.status(400).json({ message: "Invalid user configuration" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -46,7 +46,7 @@ router.post("/login", async (req, res) => {
 
     const payload = { id: user.id };
     const secret = process.env.JWT_SECRET || "supersecretaianalyticskey123";
-    const token = jwt.sign(payload, secret, { expiresIn: "1h" });
+    const token = jwt.sign(payload, secret, { expiresIn: "1d" });
 
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {

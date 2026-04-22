@@ -5,6 +5,28 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const timeoutRef = useRef(null);
+
+  // 1 hour in milliseconds
+  const TIMEOUT_DURATION = 3600000;
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, []);
+
+  const resetTimer = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (token) {
+      timeoutRef.current = setTimeout(() => {
+        console.log("Inactivity timeout reached. Logging out...");
+        logout();
+      }, TIMEOUT_DURATION);
+    }
+  }, [token, logout]);
 
   useEffect(() => {
     // Basic Hydration

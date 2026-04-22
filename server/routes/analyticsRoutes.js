@@ -53,7 +53,7 @@ router.post("/:businessId/forecast", authMiddleware, async (req, res) => {
 router.post("/:businessId/chat", authMiddleware, async (req, res) => {
   try {
     const { businessId } = req.params;
-    const { message, history } = req.body;
+    const { message, history, currency } = req.body;
 
     const business = await Business.findOne({ _id: businessId, ownerId: req.user.id });
     if (!business) return res.status(404).json({ message: "Business not found" });
@@ -63,7 +63,7 @@ router.post("/:businessId/chat", authMiddleware, async (req, res) => {
       return res.json({ response: "It looks like you haven't uploaded any data yet. Please upload a dataset so I can analyze your business." });
     }
 
-    const aiResponse = await generateChatResponse(analytics, message, history || []);
+    const aiResponse = await generateChatResponse(analytics, message, history || [], currency || 'INR');
     res.json({ response: aiResponse });
   } catch (err) {
     res.status(500).json({ message: "Server Error", error: err.message });

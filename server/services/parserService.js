@@ -68,7 +68,17 @@ const parseFileAndDeriveAnalytics = async (uploadFile, businessId, fileType) => 
            rawRecords.push({
              date: dateStr,
              customer: sender.trim(),
-             product: msg.substring(0, 40) + (msg.length > 40 ? "..." : ""),
+             product: (() => {
+               let pName = msg.trim();
+               // Remove "Ordered 5 " prefix
+               const orderPrefix = /ordered\s+\d+\s+/i;
+               if (orderPrefix.test(pName)) {
+                 pName = pName.replace(orderPrefix, "");
+               }
+               // Remove suffix like " - ₹1052" or " for 300"
+               pName = pName.split(/[\-\:]|for|at/i)[0].trim();
+               return pName.substring(0, 50);
+             })(),
              quantity,
              revenue,
              source: "WhatsApp"
