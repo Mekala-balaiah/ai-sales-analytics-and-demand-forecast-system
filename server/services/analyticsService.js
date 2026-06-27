@@ -83,29 +83,50 @@ const aggregateAnalytics = async (businessId, newRecords) => {
   doc.peakDays = Object.keys(dayMap).map(k => ({ dayOfWeek: k, orders: dayMap[k] }));
   doc.peakHours = Object.keys(hourMap).map(k => ({ hour: k, orders: hourMap[k] }));
 
-  // Growth calculation: Compare the last 50% of the timeline to the first 50%
+  // Calendar-based Month-over-Month (MoM) or Period-over-Period growth rate
   const salesCount = doc.salesOverTime.length;
   if (salesCount > 1) {
-    const midPoint = Math.floor(salesCount / 2);
-    const firstHalf = doc.salesOverTime.slice(0, midPoint);
-    const secondHalf = doc.salesOverTime.slice(midPoint);
+    const monthMap = {};
+    doc.salesOverTime.forEach(s => {
+      const monthStr = s.date.substring(0, 7); // "YYYY-MM"
+      monthMap[monthStr] = (monthMap[monthStr] || 0) + s.revenue;
+    });
     
-    const firstHalfRevenue = firstHalf.reduce((acc, curr) => acc + curr.revenue, 0);
-    const secondHalfRevenue = secondHalf.reduce((acc, curr) => acc + curr.revenue, 0);
-
-    if (firstHalfRevenue > 0) {
-      doc.growthPercent = (secondHalfRevenue / firstHalfRevenue) * 100;
+    const sortedMonths = Object.keys(monthMap).sort();
+    if (sortedMonths.length > 1) {
+      const currentMonthStr = sortedMonths[sortedMonths.length - 1];
+      const previousMonthStr = sortedMonths[sortedMonths.length - 2];
+      
+      const currentRevenue = monthMap[currentMonthStr];
+      const previousRevenue = monthMap[previousMonthStr];
+      
+      if (previousRevenue > 0) {
+        doc.growthPercent = (currentRevenue / previousRevenue) * 100;
+      } else {
+        doc.growthPercent = 100;
+      }
     } else {
-      // If we only have data in the second half, it's 100% growth (or baseline)
-      doc.growthPercent = 100;
+      const midPoint = Math.floor(salesCount / 2);
+      const firstHalf = doc.salesOverTime.slice(0, midPoint);
+      const secondHalf = doc.salesOverTime.slice(midPoint);
+      
+      const firstHalfRevenue = firstHalf.reduce((acc, curr) => acc + curr.revenue, 0);
+      const secondHalfRevenue = secondHalf.reduce((acc, curr) => acc + curr.revenue, 0);
+      
+      if (firstHalfRevenue > 0) {
+        doc.growthPercent = (secondHalfRevenue / firstHalfRevenue) * 100;
+      } else {
+        doc.growthPercent = 100;
+      }
     }
   } else {
-    // Initial state or single data point
     doc.growthPercent = 100;
   }
   
-  // Forecast Accuracy simulation metric
-  doc.forecastAccuracy = 82 + Math.floor(Math.random() * 15);
+  // Forecast Accuracy default fallback (will be recalculated by forecasting service)
+  if (!doc.forecastAccuracy) {
+    doc.forecastAccuracy = 85;
+  }
 
   await doc.save();
 
