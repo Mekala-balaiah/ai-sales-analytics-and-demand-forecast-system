@@ -65,7 +65,7 @@ const standardizeRecord = (record) => {
   // Try to find Date, Revenue, Quantity, Product names from various headers
   const dateKey = Object.keys(record).find(k => k.toLowerCase().includes("date") || k.toLowerCase() === "t") || null;
   const productKey = Object.keys(record).find(k => k.toLowerCase().includes("product") || k.toLowerCase().includes("item")) || null;
-  const revenueKey = Object.keys(record).find(k => k.toLowerCase().includes("revenue") || k.toLowerCase().includes("total") || k.toLowerCase().includes("price") || k.toLowerCase().includes("amount") || k.toLowerCase().includes("sales")) || null;
+  const revenueKey = Object.keys(record).find(k => k.toLowerCase().includes("revenue") || k.toLowerCase().includes("total") || k.toLowerCase().includes("paid") || k.toLowerCase().includes("price") || k.toLowerCase().includes("amount") || k.toLowerCase().includes("sales")) || null;
   const quantityKey = Object.keys(record).find(k => k.toLowerCase().includes("qty") || k.toLowerCase().includes("quantity")) || null;
   const customerKey = Object.keys(record).find(k => k.toLowerCase().includes("customer") || k.toLowerCase().includes("client") || k.toLowerCase().includes("name") || k.toLowerCase().includes("buyer")) || null;
   const categoryKey = Object.keys(record).find(k => k.toLowerCase().includes("category") || k.toLowerCase().includes("type")) || null;
