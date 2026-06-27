@@ -61,15 +61,65 @@ const parseRobustDate = (val) => {
   return new Date();
 };
 
+const findBestKey = (keys, includeWords, excludeWords = []) => {
+  const keysLower = keys.map(k => ({ original: k, lower: k.toLowerCase() }));
+  
+  // 1. Look for exact matches in order of preference
+  for (const word of includeWords) {
+    const match = keysLower.find(k => k.lower === word || k.lower === word.replace(/_/g, ' ') || k.lower === word.replace(/_/g, ''));
+    if (match) return match.original;
+  }
+  
+  // 2. Look for partial matches in order of preference
+  for (const word of includeWords) {
+    const match = keysLower.find(k => {
+      const hasInclude = k.lower.includes(word);
+      const hasExclude = excludeWords.some(exclude => k.lower.includes(exclude));
+      return hasInclude && !hasExclude;
+    });
+    if (match) return match.original;
+  }
+  
+  return null;
+};
+
 const standardizeRecord = (record) => {
-  // Try to find Date, Revenue, Quantity, Product names from various headers
-  const dateKey = Object.keys(record).find(k => k.toLowerCase().includes("date") || k.toLowerCase() === "t") || null;
-  const productKey = Object.keys(record).find(k => k.toLowerCase().includes("product") || k.toLowerCase().includes("item")) || null;
-  const revenueKey = Object.keys(record).find(k => k.toLowerCase().includes("revenue") || k.toLowerCase().includes("total") || k.toLowerCase().includes("price") || k.toLowerCase().includes("amount") || k.toLowerCase().includes("sales")) || null;
-  const quantityKey = Object.keys(record).find(k => k.toLowerCase().includes("qty") || k.toLowerCase().includes("quantity")) || null;
-  const customerKey = Object.keys(record).find(k => k.toLowerCase().includes("customer") || k.toLowerCase().includes("client") || k.toLowerCase().includes("name") || k.toLowerCase().includes("buyer")) || null;
-  const categoryKey = Object.keys(record).find(k => k.toLowerCase().includes("category") || k.toLowerCase().includes("type")) || null;
-  const sourceKey = Object.keys(record).find(k => k.toLowerCase().includes("source") || k.toLowerCase().includes("channel")) || null;
+  const keys = Object.keys(record);
+
+  const dateKey = findBestKey(keys, 
+    ["purchase_date", "order_date", "sales_date", "transaction_date", "date", "time", "timestamp", "created"],
+    ["birth", "delivery", "ship", "end", "expiry", "due"]
+  );
+
+  const productKey = findBestKey(keys,
+    ["product", "item", "service", "description", "desc", "package", "plan", "membership", "course", "sku"],
+    ["id", "code", "price", "cost", "amount", "tax", "rep", "trainer", "member", "customer", "client", "buyer"]
+  );
+
+  const revenueKey = findBestKey(keys,
+    ["final_amount", "net_amount", "grand_total", "total_revenue", "total_amount", "total", "revenue", "amount", "price", "sales", "paid"],
+    ["rep", "name", "person", "agent", "id", "code", "date", "by", "tax", "tds", "fee", "discount", "pending", "due", "refund", "method", "mode"]
+  );
+
+  const quantityKey = findBestKey(keys,
+    ["quantity", "qty", "number_of_items", "count", "units", "volume"],
+    ["price", "amount", "revenue", "rate", "id", "code", "phone", "contact", "number"]
+  );
+
+  const customerKey = findBestKey(keys,
+    ["customer_name", "client_name", "member_name", "buyer_name", "customer", "client", "member", "buyer", "name"],
+    ["rep", "agent", "trainer", "by", "id", "code", "manager", "staff", "user"]
+  );
+
+  const categoryKey = findBestKey(keys,
+    ["category", "product_category", "item_category", "type", "class", "group", "department", "segment"],
+    ["pay", "card", "cash", "payment", "trainer", "member", "customer", "client", "user", "id", "code"]
+  );
+
+  const sourceKey = findBestKey(keys,
+    ["source", "channel", "lead_source", "medium", "campaign", "referral", "referrer"],
+    ["code", "id"]
+  );
 
   return {
     date: dateKey && record[dateKey] !== undefined ? parseRobustDate(record[dateKey]) : new Date(),
