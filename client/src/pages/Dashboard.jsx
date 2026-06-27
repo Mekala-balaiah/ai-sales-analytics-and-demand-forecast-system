@@ -158,55 +158,74 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="glass-panel">
+            <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '412px' }}>
               <h3 className="mb-4">Revenue Distribution</h3>
-              <div style={{ width: '100%', height: '360px' }}>
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie
-                      data={data.productPerformance.slice(0, 5)}
-                      dataKey="revenue"
-                      nameKey="product"
-                      cx="35%" cy="50%"
-                      outerRadius={80}
-                      innerRadius={55}
-                      paddingAngle={0}
-                      cornerRadius={6}
-                      stroke="var(--panel-bg)"
-                      strokeWidth={2}
-                      labelLine={false}
-                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-                        if (percent < 0.05) return null; // hide very small text
-                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                        const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-                        return (
-                          <text x={x} y={y} fill="#0a192f" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
-                            {(percent * 100).toFixed(0)}%
-                          </text>
-                        );
-                      }}
-                    >
-                      {data.productPerformance.slice(0, 5).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ background: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
-                      itemStyle={{ color: 'var(--text-primary)' }}
-                    />
-                    <Legend 
-                      layout="vertical"
-                      align="right"
-                      verticalAlign="middle"
-                      formatter={(value) => (
-                        <span style={{ color: 'var(--text-primary)', fontSize: '11px', fontWeight: 500 }} title={value}>
-                          {value.length > 20 ? value.substring(0, 20) + '...' : value}
-                        </span>
-                      )} 
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+              <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {/* Left side: Pie Chart */}
+                <div style={{ flex: '1 1 200px', height: '240px', position: 'relative' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data.productPerformance.slice(0, 5)}
+                        dataKey="revenue"
+                        nameKey="product"
+                        cx="50%" cy="50%"
+                        outerRadius={85}
+                        innerRadius={60}
+                        paddingAngle={3}
+                        cornerRadius={4}
+                        stroke="var(--panel-bg)"
+                        strokeWidth={2}
+                        labelLine={false}
+                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                          if (percent < 0.05) return null; // hide very small text
+                          const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                          const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
+                          const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
+                          return (
+                            <text x={x} y={y} fill="#0a192f" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
+                              {(percent * 100).toFixed(0)}%
+                            </text>
+                          );
+                        }}
+                      >
+                        {data.productPerformance.slice(0, 5).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ background: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
+                        itemStyle={{ color: 'var(--text-primary)' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                
+                {/* Right side: Custom Legend */}
+                <div style={{ flex: '1 2 240px', display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                  {data.productPerformance.slice(0, 5).map((entry, index) => {
+                    const percent = ((entry.revenue / data.totalRevenue) * 100).toFixed(0);
+                    return (
+                      <div key={entry.product} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, marginRight: '8px' }}>
+                          <div style={{ width: '10px', height: '10px', borderRadius: '3px', backgroundColor: COLORS[index % COLORS.length], flexShrink: 0 }} />
+                          <span 
+                            style={{ fontSize: '0.85rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }} 
+                            title={entry.product}
+                          >
+                            {entry.product}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{percent}%</span>
+                          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-color)' }}>
+                            {formatCurrency(entry.revenue, currencyFormat)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
