@@ -24,11 +24,32 @@ const AnalyticsPage = () => {
 
         const group = {};
         data.productPerformance.forEach(p => {
-            const words = p.product.trim().split(' ');
-            // Use the last word as a generic category (e.g. "Paracetamol Tablet" -> "Tablet", "Lemon Pickle" -> "Pickle")
-            let cat = words.length > 1 ? words[words.length - 1] : words[0];
-            // Clean punctuation
-            cat = cat.replace(/[^a-zA-Z0-9]/g, '');
+            let cat = 'Other';
+            const prodLower = p.product.toLowerCase();
+            
+            if (prodLower.includes('annual') || prodLower.includes('yearly') || prodLower.includes('12 month') || prodLower.includes('12month')) {
+                cat = 'Annual Membership';
+            } else if (prodLower.includes('quarterly') || prodLower.includes('3 month') || prodLower.includes('3month')) {
+                cat = 'Quarterly Membership';
+            } else if (prodLower.includes('6 month') || prodLower.includes('6month') || prodLower.includes('half year')) {
+                cat = 'Semi-Annual Membership';
+            } else if (prodLower.includes('monthly') || prodLower.includes('1 month') || prodLower.includes('1month') || prodLower.includes('2 month') || prodLower.includes('2month')) {
+                cat = 'Monthly Membership';
+            } else if (prodLower.includes('membership') || prodLower.includes('workout') || prodLower.includes('gym')) {
+                cat = 'Gym Membership';
+            } else if (prodLower.includes('personal training') || prodLower.includes('pt') || prodLower.includes('trainer')) {
+                cat = 'Personal Training';
+            } else {
+                const words = p.product.trim().split(' ');
+                let lastWord = words.length > 1 ? words[words.length - 1] : words[0];
+                lastWord = lastWord.replace(/[^a-zA-Z]/g, '');
+                if (lastWord) {
+                    cat = lastWord.charAt(0).toUpperCase() + lastWord.slice(1).toLowerCase();
+                    if (cat === 'Months') cat = 'Month';
+                    if (cat === 'Memberships') cat = 'Membership';
+                }
+            }
+            
             group[cat] = (group[cat] || 0) + p.revenue;
         });
         return Object.keys(group).map(k => ({ category: k, value: group[k] })).sort((a, b) => b.value - a.value).slice(0, 7);
@@ -52,14 +73,14 @@ const AnalyticsPage = () => {
                     </h3>
                     <div style={{ height: '350px' }}>
                         <ResponsiveContainer>
-                            <PieChart>
+                          <PieChart>
                                 <Pie
                                     data={dynamicCategories}
                                     dataKey="value"
                                     nameKey="category"
                                     cx="50%" cy="50%"
-                                    outerRadius={110}
-                                    innerRadius={70} // Keeping 70 here as per original to see if it's better
+                                    outerRadius={90}
+                                    innerRadius={60}
                                     paddingAngle={0}
                                     cornerRadius={6}
                                     stroke="var(--panel-bg)"
@@ -71,7 +92,7 @@ const AnalyticsPage = () => {
                                         const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
                                         const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
                                         return (
-                                            <text x={x} y={y} fill="#0a192f" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={600}>
+                                            <text x={x} y={y} fill="#0a192f" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
                                                 {(percent * 100).toFixed(0)}%
                                             </text>
                                         );
@@ -94,11 +115,15 @@ const AnalyticsPage = () => {
                                 />
                                 <Legend 
                                     verticalAlign="bottom" 
-                                    height={36} 
+                                    height={48} 
                                     wrapperStyle={{ paddingTop: '20px' }}
-                                    formatter={(value) => <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>}
+                                    formatter={(value) => (
+                                      <span style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={value}>
+                                        {value.length > 25 ? value.substring(0, 25) + '...' : value}
+                                      </span>
+                                    )}
                                 />
-                            </PieChart>
+                          </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
@@ -107,9 +132,9 @@ const AnalyticsPage = () => {
                     <h3 className="mb-4">Peak Activity Days</h3>
                     <div style={{ height: '350px' }}>
                         <ResponsiveContainer>
-                            <BarChart data={data.peakDays}>
+                            <BarChart data={data.peakDays} margin={{ bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                                <XAxis dataKey="dayOfWeek" stroke="var(--text-secondary)" tick={{ fontSize: 12 }} interval={0} angle={-30} textAnchor="end" />
+                                <XAxis dataKey="dayOfWeek" stroke="var(--text-secondary)" tick={{ fontSize: 12 }} interval={0} angle={-30} textAnchor="end" height={45} />
                                 <YAxis stroke="var(--text-secondary)" />
                                 <Tooltip 
                                     cursor={{ fill: 'rgba(255,255,255,0.05)' }} 

@@ -9,6 +9,11 @@ import { formatCurrency } from '../utils/currencyFormatter';
 
 const COLORS = ['#00e676', '#b388ff', '#0984e3', '#ff7675', '#fdcb6e', '#e17055', '#00cec9', '#6c5ce7'];
 
+const truncateLabel = (value) => {
+  if (typeof value !== 'string') return value;
+  return value.length > 15 ? value.substring(0, 15) + '...' : value;
+};
+
 const Dashboard = () => {
   const { token } = useContext(AuthContext);
   const { activeBusiness } = useContext(BusinessContext);
@@ -117,7 +122,6 @@ const Dashboard = () => {
                   <XAxis dataKey="date" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} minTickGap={30} />
                   <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
                   <Tooltip contentStyle={{ backgroundColor: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} itemStyle={{ color: 'var(--text-primary)' }} />
-观察到 Dashboard.jsx 中 Tooltip 的 backgroundColor 使用的是 var(--bg-color)，我建议统一使用 var(--panel-bg) 因为它通常有模糊效果且在 glass-panel 中更协调。
                   <Line type="monotone" dataKey="revenue" stroke="var(--accent-color)" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -128,11 +132,20 @@ const Dashboard = () => {
           <div className="responsive-grid cols-2">
             <div className="glass-panel">
               <h3 className="mb-4">Product Performance (Quantity Sold)</h3>
-              <div style={{ width: '100%', height: '300px' }}>
+              <div style={{ width: '100%', height: '320px' }}>
                 <ResponsiveContainer>
-                  <BarChart data={data.productPerformance.slice(0, 7)}>
+                  <BarChart data={data.productPerformance.slice(0, 7)} margin={{ bottom: 35 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-                    <XAxis dataKey="product" stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
+                    <XAxis 
+                      dataKey="product" 
+                      stroke="var(--text-secondary)" 
+                      tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
+                      tickFormatter={truncateLabel}
+                      interval={0}
+                      angle={-25}
+                      textAnchor="end"
+                      height={60}
+                    />
                     <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
                     <Tooltip 
                       cursor={{ fill: 'rgba(255,255,255,0.05)' }} 
@@ -147,7 +160,7 @@ const Dashboard = () => {
 
             <div className="glass-panel">
               <h3 className="mb-4">Revenue Distribution</h3>
-              <div style={{ width: '100%', height: '300px' }}>
+              <div style={{ width: '100%', height: '320px' }}>
                 <ResponsiveContainer>
                   <PieChart>
                     <Pie
@@ -155,8 +168,8 @@ const Dashboard = () => {
                       dataKey="revenue"
                       nameKey="product"
                       cx="50%" cy="50%"
-                      outerRadius={110}
-                      innerRadius={80}
+                      outerRadius={90}
+                      innerRadius={65}
                       paddingAngle={0}
                       cornerRadius={6}
                       stroke="var(--panel-bg)"
@@ -168,7 +181,7 @@ const Dashboard = () => {
                         const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
                         const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
                         return (
-                          <text x={x} y={y} fill="#0a192f" textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={600}>
+                          <text x={x} y={y} fill="#0a192f" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
                             {(percent * 100).toFixed(0)}%
                           </text>
                         );
@@ -182,7 +195,15 @@ const Dashboard = () => {
                       contentStyle={{ background: 'var(--panel-bg)', borderColor: 'var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} 
                       itemStyle={{ color: 'var(--text-primary)' }}
                     />
-                    <Legend formatter={(value) => <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{value}</span>} />
+                    <Legend 
+                      verticalAlign="bottom"
+                      height={48}
+                      formatter={(value) => (
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={value}>
+                          {value.length > 25 ? value.substring(0, 25) + '...' : value}
+                        </span>
+                      )} 
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

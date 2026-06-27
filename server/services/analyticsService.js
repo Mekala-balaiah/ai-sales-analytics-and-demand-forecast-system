@@ -4,10 +4,27 @@ const { generateForecasts } = require("./forecastingService");
 
 const deriveCategory = (productName) => {
   const p = productName.toLowerCase();
-  if (p.includes('subscription') || p.includes('software')) return 'SaaS';
-  if (p.includes('consulting') || p.includes('service')) return 'Services';
-  if (p.includes('storage') || p.includes('server')) return 'Infrastructure';
-  return 'Other';
+  
+  // Gym / Fitness Categories
+  if (p.includes('annual') || p.includes('yearly') || p.includes('12 month') || p.includes('12month')) return 'Annual Membership';
+  if (p.includes('quarterly') || p.includes('3 month') || p.includes('3month')) return 'Quarterly Membership';
+  if (p.includes('6 month') || p.includes('6month') || p.includes('half year')) return 'Semi-Annual Membership';
+  if (p.includes('monthly') || p.includes('1 month') || p.includes('1month') || p.includes('2 month') || p.includes('2month')) return 'Monthly Membership';
+  if (p.includes('membership') || p.includes('workout') || p.includes('gym')) return 'Gym Membership';
+  if (p.includes('personal training') || p.includes('pt') || p.includes('trainer')) return 'Personal Training';
+  
+  // SaaS / Tech Categories
+  if (p.includes('subscription') || p.includes('software') || p.includes('saas')) return 'SaaS';
+  if (p.includes('storage') || p.includes('server') || p.includes('cloud') || p.includes('hosting')) return 'Infrastructure';
+  
+  // Retail / Goods
+  if (p.includes('clothing') || p.includes('shirt') || p.includes('wear') || p.includes('apparel')) return 'Apparel';
+  if (p.includes('food') || p.includes('pickle') || p.includes('spice') || p.includes('sauce') || p.includes('drink') || p.includes('beverage')) return 'Food & Beverage';
+  
+  // Services
+  if (p.includes('consulting') || p.includes('service') || p.includes('advice') || p.includes('course') || p.includes('training')) return 'Services';
+  
+  return 'General Retail';
 };
 
 const aggregateAnalytics = async (businessId, newRecords) => {
