@@ -1,0 +1,15 @@
+# Roots node modules and configuration
+node_modules/
+.env
+*.log
+.DS_Store
+.vscode/
+.idea/
+dist/
+build/
+out/
+.gemini/
+
+# Ignore nested lock files if desired, or keep them
+# client/package-lock.json
+# server/package-lock.json

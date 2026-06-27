@@ -4,6 +4,63 @@ const xlsx = require("xlsx");
 const ParsedData = require("../models/ParsedData");
 const { aggregateAnalytics } = require("./analyticsService");
 
+const parseRobustDate = (val) => {
+  if (!val) return new Date();
+
+  if (val instanceof Date) {
+    return isNaN(val.getTime()) ? new Date() : val;
+  }
+
+  if (typeof val === "number") {
+    // Excel numeric date code. Excel base date is Dec 30, 1899
+    return new Date((val - 25569) * 86400 * 1000);
+  }
+
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (!trimmed) return new Date();
+
+    // Check for DD-MM-YY(YY) or DD/MM/YY(YY) formats
+    const dmyRegex = /^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})(?:\s*,\s*|\s+)?(?:\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?/;
+    const dmyMatch = trimmed.match(dmyRegex);
+    if (dmyMatch) {
+      const day = parseInt(dmyMatch[1], 10);
+      const month = parseInt(dmyMatch[2], 10) - 1; // 0-indexed month
+      let year = parseInt(dmyMatch[3], 10);
+      if (year < 100) {
+        year = year < 50 ? 2000 + year : 1900 + year;
+      }
+      const hour = dmyMatch[4] ? parseInt(dmyMatch[4], 10) : 0;
+      const minute = dmyMatch[5] ? parseInt(dmyMatch[5], 10) : 0;
+      const second = dmyMatch[6] ? parseInt(dmyMatch[6], 10) : 0;
+
+      const d = new Date(year, month, day, hour, minute, second);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    // Check for YYYY-MM-DD or YYYY/MM/DD formats
+    const ymdRegex = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:\s*,\s*|\s+)?(?:\s*(\d{1,2}):(\d{2})(?::(\d{2}))?)?/;
+    const ymdMatch = trimmed.match(ymdRegex);
+    if (ymdMatch) {
+      const year = parseInt(ymdMatch[1], 10);
+      const month = parseInt(ymdMatch[2], 10) - 1;
+      const day = parseInt(ymdMatch[3], 10);
+      const hour = ymdMatch[4] ? parseInt(ymdMatch[4], 10) : 0;
+      const minute = ymdMatch[5] ? parseInt(ymdMatch[5], 10) : 0;
+      const second = ymdMatch[6] ? parseInt(ymdMatch[6], 10) : 0;
+
+      const d = new Date(year, month, day, hour, minute, second);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    // Fall back to standard Date parsing
+    const d = new Date(trimmed);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  return new Date();
+};
+
 const standardizeRecord = (record) => {
   // Try to find Date, Revenue, Quantity, Product names from various headers
   const dateKey = Object.keys(record).find(k => k.toLowerCase().includes("date") || k.toLowerCase() === "t") || null;
@@ -15,7 +72,7 @@ const standardizeRecord = (record) => {
   const sourceKey = Object.keys(record).find(k => k.toLowerCase().includes("source") || k.toLowerCase().includes("channel")) || null;
 
   return {
-    date: dateKey && record[dateKey] ? new Date(record[dateKey]) : new Date(),
+    date: dateKey && record[dateKey] !== undefined ? parseRobustDate(record[dateKey]) : new Date(),
     product: productKey ? String(record[productKey]) : "Unknown Product",
     category: categoryKey ? String(record[categoryKey]) : "Uncategorized",
     quantity: quantityKey ? parseInt(record[quantityKey]) || 1 : 1,
@@ -88,7 +145,15 @@ const parseFileAndDeriveAnalytics = async (uploadFile, businessId, fileType) => 
     });
   }
 
-  const standardRecords = rawRecords.map(standardizeRecord).filter(r => !isNaN(r.revenue));
+  const standardRecords = rawRecords
+    .map(standardizeRecord)
+    .filter(r => {
+      // Filter out rows that are completely empty or contain only fallbacks and zero revenue
+      if (r.product === "Unknown Product" && r.revenue === 0 && r.customer === "Guest") {
+        return false;
+      }
+      return !isNaN(r.revenue);
+    });
 
   const parsedDoc = new ParsedData({
     businessId,

@@ -48,7 +48,9 @@ const UploadCenter = () => {
         body: formData
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) {
+        throw new Error(data.error ? `${data.message}: ${data.error}` : data.message);
+      }
       
       setMessage('Data processed successfully! Dashboard is now updated.');
       setIsError(false);
