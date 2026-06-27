@@ -147,10 +147,10 @@ const AnalyticsPage = () => {
                     </div>
                 </div>
 
-                <div className="glass-panel">
+                <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '412px' }}>
                     <h3 className="mb-4">Peak Activity Days</h3>
-                    <div style={{ height: '350px' }}>
-                        <ResponsiveContainer>
+                    <div style={{ width: '100%', flex: 1, minHeight: '300px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data.peakDays} margin={{ bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                                 <XAxis dataKey="dayOfWeek" stroke="var(--text-secondary)" tick={{ fontSize: 12 }} interval={0} angle={-30} textAnchor="end" height={45} />

@@ -130,10 +130,10 @@ const Dashboard = () => {
 
           {/* 3. Product Performance | 4. Revenue Distribution */}
           <div className="responsive-grid cols-2">
-            <div className="glass-panel">
+            <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '412px' }}>
               <h3 className="mb-4">Product Performance (Quantity Sold)</h3>
-              <div style={{ width: '100%', height: '360px' }}>
-                <ResponsiveContainer>
+              <div style={{ width: '100%', flex: 1, minHeight: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.productPerformance.slice(0, 7)} margin={{ bottom: 45, left: 5, right: 5, top: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                     <XAxis 
