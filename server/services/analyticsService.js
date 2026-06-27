@@ -99,4 +99,39 @@ const aggregateAnalytics = async (businessId, newRecords) => {
   return Analytics.findOne({ businessId });
 };
 
-module.exports = { aggregateAnalytics };
+const recalculateAnalyticsFromScratch = async (businessId) => {
+  const ParsedData = require("../models/ParsedData");
+  
+  // Find all remaining uploads
+  const uploads = await ParsedData.find({ businessId });
+  const allRecords = uploads.flatMap(u => u.records);
+
+  let doc = await Analytics.findOne({ businessId });
+  if (!doc) {
+    doc = new Analytics({ businessId });
+  } else {
+    // Reset all aggregated fields to clean slate
+    doc.totalRevenue = 0;
+    doc.totalOrders = 0;
+    doc.averageOrderValue = 0;
+    doc.growthPercent = 0;
+    doc.salesOverTime = [];
+    doc.productPerformance = [];
+    doc.categoryDistribution = [];
+    doc.peakDays = [];
+    doc.peakHours = [];
+    doc.insights = [];
+    doc.predictions = [];
+  }
+
+  await doc.save();
+
+  if (allRecords.length === 0) {
+    return doc;
+  }
+
+  // Aggregate all remaining records from scratch
+  return await aggregateAnalytics(businessId, allRecords);
+};
+
+module.exports = { aggregateAnalytics, recalculateAnalyticsFromScratch };

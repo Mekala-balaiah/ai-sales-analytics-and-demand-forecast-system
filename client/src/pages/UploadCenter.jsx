@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { UploadCloud, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { UploadCloud, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { BusinessContext } from '../context/BusinessContext';
 import { AnalyticsContext } from '../context/AnalyticsContext';
@@ -13,6 +13,32 @@ const UploadCenter = () => {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState(null);
   const [isError, setIsError] = useState(false);
+
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const fetchHistory = async () => {
+    if (!activeBusiness || !token) return;
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/upload/${activeBusiness._id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch upload history:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+    setMessage(null);
+  }, [activeBusiness, token]);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -56,11 +82,54 @@ const UploadCenter = () => {
       setIsError(false);
       setFile(null);
       await refreshAnalytics();
+      await fetchHistory();
     } catch (err) {
       setMessage(err.message);
       setIsError(true);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDelete = async (fileId) => {
+    if (!window.confirm("Are you sure you want to delete this upload? This will recalculate all dashboard metrics.")) return;
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/upload/${activeBusiness._id}/file/${fileId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      
+      setMessage('File deleted and dashboard recalculated successfully!');
+      setIsError(false);
+      await refreshAnalytics();
+      await fetchHistory();
+    } catch (err) {
+      setMessage(err.message);
+      setIsError(true);
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm("WARNING: Are you sure you want to reset all data for this business? This will delete all uploaded files and clear the dashboard completely.")) return;
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/upload/${activeBusiness._id}/reset`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      
+      setMessage('All business data has been reset successfully!');
+      setIsError(false);
+      await refreshAnalytics();
+      await fetchHistory();
+    } catch (err) {
+      setMessage(err.message);
+      setIsError(true);
     }
   };
 
@@ -127,6 +196,67 @@ const UploadCenter = () => {
           {message}
         </div>
       )}
+
+      {/* Upload History Section */}
+      <div className="glass-panel mt-4">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3>Upload History</h3>
+          {history.length > 0 && (
+            <button 
+              className="btn-danger" 
+              style={{ padding: '6px 12px', fontSize: '0.9rem' }}
+              onClick={handleReset}
+            >
+              Reset All Data
+            </button>
+          )}
+        </div>
+        
+        {loadingHistory ? (
+          <p style={{ color: 'var(--text-secondary)' }}>Loading history...</p>
+        ) : history.length === 0 ? (
+          <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>No files uploaded yet.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                  <th style={{ padding: '12px 8px' }}>File Name</th>
+                  <th style={{ padding: '12px 8px' }}>Type</th>
+                  <th style={{ padding: '12px 8px' }}>Records</th>
+                  <th style={{ padding: '12px 8px' }}>Uploaded At</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'right' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {history.map(item => (
+                  <tr key={item._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '12px 8px', fontWeight: 500 }}>{item.fileName}</td>
+                    <td style={{ padding: '12px 8px' }}><span className="badge" style={{ padding: '4px 8px', background: 'var(--border-color)', borderRadius: '4px', fontSize: '0.8rem' }}>{item.fileType.toUpperCase()}</span></td>
+                    <td style={{ padding: '12px 8px' }}>{item.recordCount.toLocaleString()}</td>
+                    <td style={{ padding: '12px 8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                      {new Date(item.uploadedAt).toLocaleString()}
+                    </td>
+                    <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                      <button 
+                        style={{ 
+                          background: 'none', border: 'none', cursor: 'pointer', 
+                          color: 'var(--danger-color)', display: 'inline-flex', alignItems: 'center',
+                          padding: '4px', borderRadius: '4px'
+                        }}
+                        onClick={() => handleDelete(item._id)}
+                        title="Delete Upload"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

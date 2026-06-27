@@ -126,6 +126,25 @@ p {
   background: rgba(100, 255, 218, 0.1);
 }
 
+.btn-danger {
+  background-color: var(--danger-color);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-danger:hover {
+  filter: brightness(0.9);
+  transform: translateY(-2px);
+}
+
 .input-control {
   width: 100%;
   background: rgba(0, 0, 0, 0.1);

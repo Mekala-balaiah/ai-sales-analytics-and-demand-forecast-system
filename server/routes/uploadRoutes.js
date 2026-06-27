@@ -6,7 +6,9 @@ const fs = require("fs");
 const authMiddleware = require("../middleware/authMiddleware");
 const Business = require("../models/Business");
 const ParsedData = require("../models/ParsedData");
+const Analytics = require("../models/Analytics");
 const { parseFileAndDeriveAnalytics } = require("../services/parserService");
+const { recalculateAnalyticsFromScratch } = require("../services/analyticsService");
 
 // Ensure uploads folder exists
 const uploadDir = path.join(__dirname, "../uploads");
@@ -49,6 +51,81 @@ router.post("/:businessId", authMiddleware, upload.single("file"), async (req, r
         else console.log("Cleaned up processed file from uploads directory:", req.file.path);
       });
     }
+  }
+});
+
+// Get List of Uploaded Files for Business
+router.get("/:businessId", authMiddleware, async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    const business = await Business.findOne({ _id: businessId, ownerId: req.user.id });
+    if (!business) return res.status(404).json({ message: "Business not found" });
+
+    const uploads = await ParsedData.find({ businessId })
+      .select("fileName fileType uploadedAt records")
+      .sort({ uploadedAt: -1 });
+
+    const summary = uploads.map(u => ({
+      _id: u._id,
+      fileName: u.fileName,
+      fileType: u.fileType,
+      uploadedAt: u.uploadedAt,
+      recordCount: u.records ? u.records.length : 0
+    }));
+
+    res.json(summary);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+});
+
+// Delete Specific File Upload and Recalculate Analytics
+router.delete("/:businessId/file/:fileId", authMiddleware, async (req, res) => {
+  try {
+    const { businessId, fileId } = req.params;
+    const business = await Business.findOne({ _id: businessId, ownerId: req.user.id });
+    if (!business) return res.status(404).json({ message: "Business not found" });
+
+    const deleted = await ParsedData.deleteOne({ _id: fileId, businessId });
+    if (deleted.deletedCount === 0) {
+      return res.status(404).json({ message: "File upload not found" });
+    }
+
+    const updatedAnalytics = await recalculateAnalyticsFromScratch(businessId);
+    res.json({ message: "File deleted and analytics recalculated successfully", analytics: updatedAnalytics });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err.message });
+  }
+});
+
+// Reset/Clear All Uploaded Data for Business
+router.delete("/:businessId/reset", authMiddleware, async (req, res) => {
+  try {
+    const { businessId } = req.params;
+    const business = await Business.findOne({ _id: businessId, ownerId: req.user.id });
+    if (!business) return res.status(404).json({ message: "Business not found" });
+
+    await ParsedData.deleteMany({ businessId });
+    
+    let analytics = await Analytics.findOne({ businessId });
+    if (analytics) {
+      analytics.totalRevenue = 0;
+      analytics.totalOrders = 0;
+      analytics.averageOrderValue = 0;
+      analytics.growthPercent = 0;
+      analytics.salesOverTime = [];
+      analytics.productPerformance = [];
+      analytics.categoryDistribution = [];
+      analytics.peakDays = [];
+      analytics.peakHours = [];
+      analytics.insights = [];
+      analytics.predictions = [];
+      await analytics.save();
+    }
+
+    res.json({ message: "All business data has been reset successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 });
 
