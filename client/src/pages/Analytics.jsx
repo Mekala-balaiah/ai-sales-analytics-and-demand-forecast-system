@@ -78,9 +78,9 @@ const AnalyticsPage = () => {
                                     data={dynamicCategories}
                                     dataKey="value"
                                     nameKey="category"
-                                    cx="50%" cy="50%"
-                                    outerRadius={90}
-                                    innerRadius={60}
+                                    cx="35%" cy="50%"
+                                    outerRadius={80}
+                                    innerRadius={55}
                                     paddingAngle={0}
                                     cornerRadius={6}
                                     stroke="var(--panel-bg)"
@@ -114,12 +114,12 @@ const AnalyticsPage = () => {
                                     itemStyle={{ color: 'var(--text-primary)' }}
                                 />
                                 <Legend 
-                                    verticalAlign="bottom" 
-                                    height={48} 
-                                    wrapperStyle={{ paddingTop: '20px' }}
+                                    layout="vertical"
+                                    align="right"
+                                    verticalAlign="middle"
                                     formatter={(value) => (
-                                      <span style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={value}>
-                                        {value.length > 25 ? value.substring(0, 25) + '...' : value}
+                                      <span style={{ color: 'var(--text-primary)', fontSize: '11px', fontWeight: 500 }} title={value}>
+                                        {value.length > 20 ? value.substring(0, 20) + '...' : value}
                                       </span>
                                     )}
                                 />

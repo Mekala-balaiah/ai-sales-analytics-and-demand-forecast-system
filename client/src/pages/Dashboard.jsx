@@ -132,9 +132,9 @@ const Dashboard = () => {
           <div className="responsive-grid cols-2">
             <div className="glass-panel">
               <h3 className="mb-4">Product Performance (Quantity Sold)</h3>
-              <div style={{ width: '100%', height: '320px' }}>
+              <div style={{ width: '100%', height: '360px' }}>
                 <ResponsiveContainer>
-                  <BarChart data={data.productPerformance.slice(0, 7)} margin={{ bottom: 35 }}>
+                  <BarChart data={data.productPerformance.slice(0, 7)} margin={{ bottom: 45, left: 5, right: 5, top: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
                     <XAxis 
                       dataKey="product" 
@@ -142,9 +142,9 @@ const Dashboard = () => {
                       tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
                       tickFormatter={truncateLabel}
                       interval={0}
-                      angle={-25}
+                      angle={-30}
                       textAnchor="end"
-                      height={60}
+                      height={75}
                     />
                     <YAxis stroke="var(--text-secondary)" tick={{ fill: 'var(--text-secondary)' }} />
                     <Tooltip 
@@ -160,16 +160,16 @@ const Dashboard = () => {
 
             <div className="glass-panel">
               <h3 className="mb-4">Revenue Distribution</h3>
-              <div style={{ width: '100%', height: '320px' }}>
+              <div style={{ width: '100%', height: '360px' }}>
                 <ResponsiveContainer>
                   <PieChart>
                     <Pie
                       data={data.productPerformance.slice(0, 5)}
                       dataKey="revenue"
                       nameKey="product"
-                      cx="50%" cy="50%"
-                      outerRadius={90}
-                      innerRadius={65}
+                      cx="35%" cy="50%"
+                      outerRadius={80}
+                      innerRadius={55}
                       paddingAngle={0}
                       cornerRadius={6}
                       stroke="var(--panel-bg)"
@@ -196,11 +196,12 @@ const Dashboard = () => {
                       itemStyle={{ color: 'var(--text-primary)' }}
                     />
                     <Legend 
-                      verticalAlign="bottom"
-                      height={48}
+                      layout="vertical"
+                      align="right"
+                      verticalAlign="middle"
                       formatter={(value) => (
-                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }} title={value}>
-                          {value.length > 25 ? value.substring(0, 25) + '...' : value}
+                        <span style={{ color: 'var(--text-primary)', fontSize: '11px', fontWeight: 500 }} title={value}>
+                          {value.length > 20 ? value.substring(0, 20) + '...' : value}
                         </span>
                       )} 
                     />
