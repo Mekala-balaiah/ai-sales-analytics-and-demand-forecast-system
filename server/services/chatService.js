@@ -1,73 +1,160 @@
-const Groq = require("groq-sdk");
 
-let groq;
-const getGroq = () => {
-  if (!groq) {
-    if (!process.env.GROQ_API_KEY) {
-      throw new Error("GROQ_API_KEY environment variable is missing on this server.");
+const { GoogleGenAI } = require("@google/genai");
+
+let gemini;
+
+const getGemini = () => {
+  if (!gemini) {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error(
+        "GEMINI_API_KEY environment variable is missing on this server."
+      );
     }
-    groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    gemini = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+    });
   }
-  return groq;
+
+  return gemini;
 };
 
-const generateChatResponse = async (analyticsDoc, userMessage, chatHistory, currencyFormat = 'INR') => {
+const generateChatResponse = async (
+  analyticsDoc,
+  userMessage,
+  chatHistory = [],
+  currencyFormat = "INR"
+) => {
   try {
-    const aiInstance = getGroq();
+    const ai = getGemini();
 
-    // Determine the currency symbol and locale from the user's selected data format
-    const isINR = currencyFormat !== 'USD_TO_INR';
-    const symbol = isINR ? '₹' : '$';
-    const locale = isINR ? 'en-IN' : 'en-US';
+    const isINR = currencyFormat !== "USD_TO_INR";
+    const symbol = isINR ? "₹" : "$";
+    const locale = isINR ? "en-IN" : "en-US";
 
-    // Helper to format currency values in the prompt
-    const formatValue = (val) => {
-      return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(val || 0);
-    };
+    const formatValue = (val) =>
+      new Intl.NumberFormat(locale, {
+        maximumFractionDigits: 2,
+      }).format(Number(val) || 0);
 
-    // Provide context about the business's data
+    const growth = Number(analyticsDoc.growthPercent) || 0;
+
     const systemPrompt = `
-You are an expert AI Business Assistant integrated directly into a business analytics dashboard for MicroBizCopilot.
-The user is asking a question about their business data. Answer concisely, professionally, and use the provided data context to give accurate and specific insights.
-ALWAYS use the correct currency symbol (**${symbol}**) and formatting for all monetary values.
-${isINR ? "Place commas according to the **Indian numbering system (Lakhs and Crores)** for all INR values (e.g., ₹11,16,124)." : "Use the standard International numbering system for USD values (e.g., $1,116,124)."}
+You are an expert AI Business Assistant for MicroBizCopilot.
 
-Use markdown for formatting, like **bolding** key metrics.
+Answer questions about the user's business analytics accurately,
+concisely, professionally, and with actionable recommendations.
 
-Here is the current business data context:
+Always use ${symbol} for monetary values.
+${isINR
+  ? "Use Indian number formatting, including lakhs and crores."
+  : "Use international number formatting for USD."}
+
+Use Markdown and bold important metrics.
+Use only the supplied business data for business-specific facts.
+Do not invent missing values or claim a forecast exists if it was not supplied.
+
+BUSINESS DATA:
 - Total Revenue: ${symbol}${formatValue(analyticsDoc.totalRevenue)}
 - Total Orders: ${analyticsDoc.totalOrders || 0}
-- Average Order Value (AOV): ${symbol}${formatValue(analyticsDoc.averageOrderValue)}
-- Growth (Period over Period): ${Math.abs(analyticsDoc.growthPercent - 100).toFixed(1)}% ${analyticsDoc.growthPercent >= 100 ? 'Increase' : 'Decrease'}
-- Top Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(0, 3).map(p => `${p.product} (Revenue: ${symbol}${formatValue(p.revenue)}, Qty: ${p.quantity})`).join(', ') : 'None'}
-- Bottom Products: ${analyticsDoc.productPerformance ? analyticsDoc.productPerformance.slice(-3).map(p => `${p.product} (Revenue: ${symbol}${formatValue(p.revenue)}, Qty: ${p.quantity})`).join(', ') : 'None'}
-- Top Sales Days: ${analyticsDoc.peakDays ? analyticsDoc.peakDays.slice(0, 2).map(d => `${d.dayOfWeek} (${d.orders} orders)`).join(', ') : 'None'}
-- Recent System Insights: ${analyticsDoc.insights ? analyticsDoc.insights.slice(0, 3).map(i => i.title + ': ' + i.description).join(' | ') : 'None'}
+- Average Order Value: ${symbol}${formatValue(analyticsDoc.averageOrderValue)}
+- Period-over-period growth: ${Math.abs(growth - 100).toFixed(1)}%
+  ${growth >= 100 ? "Increase" : "Decrease"}
+- Top Products: ${
+  analyticsDoc.productPerformance
+    ? analyticsDoc.productPerformance
+        .slice(0, 3)
+        .map(
+          (p) =>
+            `${p.product} (Revenue: ${symbol}${formatValue(p.revenue)}, Quantity: ${p.quantity})`
+        )
+        .join(", ")
+    : "None"
+}
+- Bottom Products: ${
+  analyticsDoc.productPerformance
+    ? analyticsDoc.productPerformance
+        .slice(-3)
+        .map(
+          (p) =>
+            `${p.product} (Revenue: ${symbol}${formatValue(p.revenue)}, Quantity: ${p.quantity})`
+        )
+        .join(", ")
+    : "None"
+}
+- Peak Sales Days: ${
+  analyticsDoc.peakDays
+    ? analyticsDoc.peakDays
+        .slice(0, 2)
+        .map((d) => `${d.dayOfWeek} (${d.orders} orders)`)
+        .join(", ")
+    : "None"
+}
+- Recent Insights: ${
+  analyticsDoc.insights
+    ? analyticsDoc.insights
+        .slice(0, 3)
+        .map((i) => `${i.title}: ${i.description}`)
+        .join(" | ")
+    : "None"
+}
 `;
 
-    // Format chat history for Groq API
-    const formattedHistory = chatHistory.map(msg => ({
-      role: msg.role === 'ai' ? 'assistant' : 'user',
-      content: msg.text,
-    }));
+    // Convert existing chat history to Gemini's format.
+    // Gemini uses "model" instead of "assistant".
+    const history = chatHistory
+      .filter(
+        (msg) =>
+          (msg.role === "user" || msg.role === "ai") &&
+          typeof msg.text === "string" &&
+          msg.text.trim()
+      )
+      .map((msg) => ({
+        role: msg.role === "ai" ? "model" : "user",
+        parts: [{ text: msg.text }],
+      }));
 
-    const messages = [
-      { role: "system", content: systemPrompt },
-      ...formattedHistory,
-      { role: "user", content: userMessage }
-    ];
+    // Gemini chat history must begin with a user message
+    // and alternate user/model messages.
+    const validHistory = [];
+    let expectedRole = "user";
 
-    const chatCompletion = await aiInstance.chat.completions.create({
-      messages: messages,
-      model: "llama-3.1-8b-instant", // Fast and powerful open-source model
-      temperature: 0.7,
-      max_tokens: 4000,
+    for (const msg of history) {
+      if (msg.role === expectedRole) {
+        validHistory.push(msg);
+        expectedRole = expectedRole === "user" ? "model" : "user";
+      }
+    }
+
+    // If history ends with a user message, remove it:
+    // the current question is sent separately below.
+    if (validHistory.length > 0 &&
+        validHistory[validHistory.length - 1].role === "user") {
+      validHistory.pop();
+    }
+
+    const chat = ai.chats.create({
+      model: "gemini-2.5-flash",
+      history: validHistory,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.7,
+        maxOutputTokens: 4000,
+      },
     });
 
-    return chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+    const response = await chat.sendMessage({
+      message: userMessage,
+    });
+
+    return (
+      response.text ||
+      "I'm sorry, I couldn't generate a response."
+    );
   } catch (error) {
-    console.error("Groq API Error:", error);
-    return "I'm sorry, I encountered an error while trying to generate a response. Please try again later.";
+    console.error("Gemini API Error:", error.message);
+
+    return "I'm sorry, I encountered an error while generating a response. Please try again later.";
   }
 };
 
